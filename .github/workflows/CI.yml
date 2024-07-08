@@ -14,6 +14,8 @@ on:
       - '*'
   pull_request:
   workflow_dispatch:
+  release:
+    types: [created]
 
 permissions:
   contents: read
@@ -38,6 +40,8 @@ jobs:
             target: ppc64le
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -45,6 +49,7 @@ jobs:
           args: --release --out dist
           sccache: 'true'
           manylinux: auto
+          before-script-linux: 'pwd; ls -R .'
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
@@ -66,6 +71,8 @@ jobs:
             target: armv7
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -90,6 +97,8 @@ jobs:
             target: x86
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -113,6 +122,8 @@ jobs:
             target: aarch64
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -129,6 +140,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
@@ -139,3 +152,24 @@ jobs:
         with:
           name: wheels-sdist
           path: dist
+
+  pypi-publish:
+    name: upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: publish_pypi
+      url: https://pypi.org/p/mcumgr-client-wrapper
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+    if: github.event_name == 'release' && github.event.action == 'created'
+    needs: [linux, musllinux, windows, macos, sdist]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist/
+          merge-multiple: true
+      - name: Display structure of downloaded files
+        run: ls -R dist/
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
