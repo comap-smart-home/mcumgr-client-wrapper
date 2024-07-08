@@ -158,7 +158,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: publish_pypi
-      url: https://test.pypi.org/p/mcumgr-client-wrapper
+      url: https://pypi.org/p/mcumgr-client-wrapper
     permissions:
       # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
@@ -173,5 +173,3 @@ jobs:
         run: ls -R dist/
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
