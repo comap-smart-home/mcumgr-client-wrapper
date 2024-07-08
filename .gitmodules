@@ -1,0 +1,3 @@
+[submodule "mcumgr-client"]
+	path = mcumgr-client
+	url = https://github.com/comap-smart-home/mcumgr-client.git
