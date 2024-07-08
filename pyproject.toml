@@ -3,7 +3,7 @@ requires = ["maturin>=1.7,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "mcumgr-client-py"
+name = "mcumgr-client-wrapper"
 requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -19,7 +19,7 @@ readme = "README.md"
 license = {text = "Apache-2.0"}
 
 [project.urls]
-Repository = "https://github.com/comap-smart-home/mcumgr-client-py"
+Repository = "https://github.com/comap-smart-home/mcumgr-client-wrapper"
 
 [tool.maturin]
 bindings = "bin"
