@@ -45,6 +45,7 @@ jobs:
           args: --release --out dist
           sccache: 'true'
           manylinux: auto
+          before-script-linux: 'pwd; ls -R .'
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
