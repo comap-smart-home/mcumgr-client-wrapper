@@ -25,4 +25,3 @@ Repository = "https://github.com/comap-smart-home/mcumgr-client-py"
 bindings = "bin"
 python-source = "src"
 python-packages = ["mcumgr_client_wrapper"]
-manifest-path = "mcumgr-client/Cargo.toml"
