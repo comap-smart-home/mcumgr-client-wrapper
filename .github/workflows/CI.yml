@@ -35,8 +35,8 @@ jobs:
           path: ./pyproject.toml
 
   linux:
-    runs-on: ${{ matrix.platform.runner }}
     needs: [pyproject_version]
+    runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
         platform:
@@ -73,6 +73,7 @@ jobs:
           path: dist
 
   musllinux:
+    needs: [pyproject_version]
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -89,6 +90,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: 'true'
+      - uses: actions/download-artifact@v4
+        with:
+          name: pyproject
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -103,6 +107,7 @@ jobs:
           path: dist
 
   windows:
+    needs: [pyproject_version]
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -115,6 +120,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: 'true'
+      - uses: actions/download-artifact@v4
+        with:
+          name: pyproject
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -128,6 +136,7 @@ jobs:
           path: dist
 
   macos:
+    needs: [pyproject_version]
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -140,6 +149,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: 'true'
+      - uses: actions/download-artifact@v4
+        with:
+          name: pyproject
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -153,11 +165,15 @@ jobs:
           path: dist
 
   sdist:
+    needs: [pyproject_version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: 'true'
+      - uses: actions/download-artifact@v4
+        with:
+          name: pyproject
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
