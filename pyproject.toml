@@ -14,7 +14,8 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-version = "0.0.1"
+# This is edited by the CI when a tag is pushed
+# version = "0"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 
@@ -24,4 +25,4 @@ Repository = "https://github.com/comap-smart-home/mcumgr-client-wrapper"
 [tool.maturin]
 bindings = "bin"
 python-source = "src"
-python-packages = ["mcumgr_client_wrapper"]
+module-name = "mcumgr_client"

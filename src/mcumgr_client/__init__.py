@@ -1,4 +1,4 @@
-"""mcumgr_client_wrapper
+"""mcumgr_client
 
 A module to invoke mcumgr-client binary from python
 
