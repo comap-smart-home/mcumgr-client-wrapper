@@ -24,4 +24,4 @@ Repository = "https://github.com/comap-smart-home/mcumgr-client-wrapper"
 [tool.maturin]
 bindings = "bin"
 python-source = "src"
-python-packages = ["mcumgr_client_wrapper"]
+module-name = "mcumgr_client"

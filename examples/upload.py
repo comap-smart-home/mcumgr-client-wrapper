@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
-import mcumgr_client_wrapper as mcgr
+import mcumgr_client as mcgr
 
 try:
     s = mcgr.Session(sys.argv[1], 576000)

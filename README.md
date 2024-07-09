@@ -6,9 +6,9 @@ This allows sending MCUmgr commands to a device connected to a serial port from 
 # How to use
 
 ```
-import mcumgr_client_wrapper
+import mcumgr_client
 
-s = mcumgr_client_wrapper.Session(device='/dev/ttyUSB0', baudrate=576000)
+s = mcumgr_client.Session(device='/dev/ttyUSB0', baudrate=576000)
 # Get a dictionnary of properties 
 d = s.list()
 print(d)
@@ -20,4 +20,4 @@ s.upload('/path/to/image/bin')
 s.reset()
 ```
 
-see `help(mcumgr_client_wrapper)` for more
+see `help(mcumgr_client)` for more
