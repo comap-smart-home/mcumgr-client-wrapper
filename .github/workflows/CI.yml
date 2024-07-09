@@ -208,7 +208,7 @@ jobs:
         with:
           path: dist/
           merge-multiple: true
-          pattern: mcumgr_client_wrapper-*
+          pattern: wheels-*
       - name: Display structure of downloaded files
         run: ls -R dist/
       - name: Publish to PyPI
