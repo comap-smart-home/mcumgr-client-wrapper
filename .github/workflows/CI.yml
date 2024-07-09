@@ -21,14 +21,16 @@ permissions:
 jobs:
   pyproject_version:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - uses: actions/checkout@v4
-      - name: Set version from tag in pyproject.toml
+      - if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/checkout@v4
+      - if: startsWith(github.ref, 'refs/tags/')
+        name: Set version from tag in pyproject.toml
         run: |
           version=${{github.ref_name}}
           sed -i.bak -E "s/# version\s*=\s*\".*\"/version = \"${version:1}\"/" pyproject.toml
-      - name: Upload pyproject.toml
+      - if: startsWith(github.ref, 'refs/tags/')
+        name: Upload pyproject.toml
         uses: actions/upload-artifact@v4
         with:
           name: pyproject
