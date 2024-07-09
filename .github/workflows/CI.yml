@@ -40,6 +40,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: 'true'
+      - if: startsWith(github.ref, 'refs/tags/')
+        name: Set version from tag in pyproject.toml
+        run: sed -E "s/# version\s*=\s*\".*\"/version = \"${{github.ref_name}}\"/" pyproject.toml > pyproject.toml
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -47,7 +50,6 @@ jobs:
           args: --release --out dist
           sccache: 'true'
           manylinux: auto
-          before-script-linux: 'pwd; ls -R .'
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
