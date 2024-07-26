@@ -1,14 +1,14 @@
 # mcumgr-client-wrapper
 
-A python wrapper for the rust program [mcumgr-client](https://github.com/vouch-opensource/mcumgr-client).
+Python bindings for the rust library [mcumgr-client](https://github.com/vouch-opensource/mcumgr-client).
 This allows sending MCUmgr commands to a device connected to a serial port from Python.
 
 # How to use
 
 ```
-import mcumgr_client
+import mcumgr_client as mcu
 
-s = mcumgr_client.Session(device='/dev/ttyUSB0', baudrate=576000)
+s = mcu.SerialSession(device='/dev/ttyUSB0', baudrate=576000)
 # Get a dictionnary of properties 
 d = s.list()
 print(d)

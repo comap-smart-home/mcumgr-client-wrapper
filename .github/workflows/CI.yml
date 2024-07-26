@@ -62,11 +62,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: pyproject
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist
+          args: --release --out dist --find-interpreter
           sccache: 'true'
           manylinux: auto
       - name: Upload wheels
@@ -97,11 +100,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: pyproject
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist
+          args: --release --out dist --find-interpreter
           sccache: 'true'
           manylinux: musllinux_1_2
       - name: Upload wheels
@@ -128,11 +134,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: pyproject
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+          architecture: ${{ matrix.platform.target }}
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist
+          args: --release --out dist --find-interpreter
           sccache: 'true'
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -158,11 +168,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: pyproject
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist
+          args: --release --out dist --find-interpreter
           sccache: 'true'
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -192,11 +205,11 @@ jobs:
           name: wheels-sdist
           path: dist
 
-  pypi-publish:
+  release:
     name: upload release to PyPI
     runs-on: ubuntu-latest
     environment:
-      name: publish_pypi
+      name: pypi
       url: https://pypi.org/p/mcumgr-client-wrapper
     permissions:
       # IMPORTANT: this permission is mandatory for trusted publishing
