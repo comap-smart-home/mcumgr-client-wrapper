@@ -25,46 +25,7 @@ use std::path::PathBuf;
 struct SerialSession {
     specs: SerialSpecs,
 }
-
-fn cbor_to_py(py: Python, value: &Value) -> PyResult<PyObject> {
-    match value {
-        Value::Null => Ok(py.None()),
-        Value::Bool(b) => Ok(b.into_py(py)),
-        Value::Integer(num) => Ok(num.into_py(py)),
-        Value::Float(num) => Ok(num.into_py(py)),
-        Value::Bytes(bytes) => Ok(PyBytes::new_bound(py, bytes).into_py(py)),
-        Value::Text(s) => Ok(s.into_py(py)),
-        Value::Array(arr) => {
-            let py_list = PyList::new_bound(
-                py,
-                arr.iter()
-                    .map(|v| cbor_to_py(py, v))
-                    .collect::<Result<Vec<_>, _>>()?,
-            );
-            Ok(py_list.into_py(py))
-        }
-        Value::Map(map) => {
-            let py_dict = PyDict::new_bound(py);
-            for (k, v) in map {
-                let key = match k {
-                    Value::Text(s) => s.clone(),
-                    _ => {
-                        return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
-                            "Invalid map key",
-                        ))
-                    }
-                };
-                py_dict.set_item(key, cbor_to_py(py, v)?)?;
-            }
-            Ok(py_dict.into_py(py))
-        }
-        Value::Tag(_, boxed_value) => cbor_to_py(py, boxed_value),
-        _ => Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
-            "unknown cbor type",
-        )),
-    }
-}
-
+   
 #[pymethods]
 impl SerialSession {
     #[new]
