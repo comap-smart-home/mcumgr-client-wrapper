@@ -115,7 +115,7 @@ impl SerialSession {
 
         let py_list = PyList::empty_bound(py);
 
-        for entry in &result {
+        for entry in &result.images {
             let py_dict = PyDict::new_bound(py);
             py_dict.set_item("image", entry.image.clone())?;
             py_dict.set_item("slot", entry.slot.clone())?;
