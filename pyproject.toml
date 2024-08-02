@@ -17,6 +17,7 @@ readme = "README.md"
 license = {text = "Apache-2.0"}
 authors = [
   { name="Adrien Bruant" },
+  { name="Baptiste Cluzel" },
 ]
 
 [project.urls]

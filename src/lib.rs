@@ -1,15 +1,15 @@
-use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList, PyBytes};
 use mcumgr_client;
 use mcumgr_client::SerialSpecs;
+use pyo3::prelude::*;
+use pyo3::types::{PyBytes, PyDict, PyList};
 use serde_cbor::Value;
 use std::path::PathBuf;
 
 /// A session allows sending MCUmgr commands to a device over a serial port.
-/// 
+///
 /// The serial port is configured during initialization of the Session. It stores the configuration
 /// and manages the serial port.
-/// 
+///
 /// Args:
 ///     device (str): Name of the device used for serial communication (/dev/ttyUSBx, COMx,
 ///     etc.).
@@ -21,39 +21,11 @@ use std::path::PathBuf;
 ///     nb_retry (int):
 ///     linelength (int):
 ///     mtu (int):
-#[pyclass(module="mcumgr_client")]
+#[pyclass(module = "mcumgr_client")]
 struct SerialSession {
-    specs: SerialSpecs
+    specs: SerialSpecs,
 }
-
-fn cbor_to_py(py: Python, value: &Value) -> PyResult<PyObject> {
-    match value {
-        Value::Null => Ok(py.None()),
-        Value::Bool(b) => Ok(b.into_py(py)),
-        Value::Integer(num) => Ok(num.into_py(py)),
-        Value::Float(num) => Ok(num.into_py(py)),
-        Value::Bytes(bytes) => Ok(PyBytes::new_bound(py, bytes).into_py(py)),
-        Value::Text(s) => Ok(s.into_py(py)),
-        Value::Array(arr) => {
-            let py_list = PyList::new_bound(py, arr.iter().map(|v| cbor_to_py(py, v)).collect::<Result<Vec<_>, _>>()?);
-            Ok(py_list.into_py(py))
-        },
-        Value::Map(map) => {
-            let py_dict = PyDict::new_bound(py);
-            for (k, v) in map {
-                let key = match k {
-                    Value::Text(s) => s.clone(),
-                    _ => return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid map key")),
-                };
-                py_dict.set_item(key, cbor_to_py(py, v)?)?;
-            }
-            Ok(py_dict.into_py(py))
-        }
-        Value::Tag(_, boxed_value) => cbor_to_py(py, boxed_value),
-        _ => Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("unknown cbor type")),
-    }
-}
-
+   
 #[pymethods]
 impl SerialSession {
     #[new]
@@ -66,7 +38,7 @@ impl SerialSession {
         subsequent_timeout_ms: u32,
         nb_retry: u32,
         linelength: usize,
-        mtu: usize
+        mtu: usize,
     ) -> Self {
         SerialSession {
             specs: SerialSpecs {
@@ -81,18 +53,44 @@ impl SerialSession {
         }
     }
 
+    #[pyo3(signature = (hash, confirm=None))]
+    fn test(&self, hash: Vec<u8>, confirm: Option<bool>) -> PyResult<()> {
+        mcumgr_client::test(&self.specs, hash, confirm)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    #[pyo3(signature = (slot=None))]
+    fn erase(&self, slot: Option<u32>) -> PyResult<()> {
+        mcumgr_client::erase(&self.specs, slot)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
     /// List the properties of the images in a device.
-    /// 
+    ///
     /// Returns:
-    ///     dict: A dictionnary containing the properties of the listed images
-    /// 
+    ///     list: A list of dicts containing the properties of the images
+    ///
     fn list(&self, py: Python) -> PyResult<PyObject> {
         let result = mcumgr_client::list(&self.specs)
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))?;
 
-        let pydict = cbor_to_py(py, &result)?;
+        let py_list = PyList::empty_bound(py);
 
-        Ok(pydict)
+        for entry in &result.images {
+            let py_dict = PyDict::new_bound(py);
+            py_dict.set_item("image", entry.image.clone())?;
+            py_dict.set_item("slot", entry.slot.clone())?;
+            py_dict.set_item("version", entry.version.clone())?;
+            py_dict.set_item("hash", entry.hash.clone())?;
+            py_dict.set_item("bootable", entry.bootable)?;
+            py_dict.set_item("pending", entry.pending)?;
+            py_dict.set_item("confirmed", entry.confirmed)?;
+            py_dict.set_item("active", entry.active)?;
+            py_dict.set_item("permanent", entry.permanent)?;
+            py_list.append(py_dict)?;
+        }
+
+        Ok(py_list.into())
     }
 
     /// Reset a device
@@ -110,14 +108,19 @@ impl SerialSession {
     ///     representing the current progress (offset, total size). This is called periodically
     ///     during the upload process.
     #[pyo3(signature = (filename, slot=0, progress=None))]
-    fn upload(&self, py: Python, filename: &str, slot: u8, progress: Option<PyObject>) -> PyResult<()> {
-
+    fn upload(
+        &self,
+        py: Python,
+        filename: &str,
+        slot: u8,
+        progress: Option<PyObject>,
+    ) -> PyResult<()> {
         let path = PathBuf::from(filename);
         let callback = match progress {
             None => None,
             Some(pyfun) => {
                 let pyfun = pyfun.clone_ref(py);
-                
+
                 Some(move |pos, total| {
                     Python::with_gil(|py| {
                         if let Err(e) = pyfun.call1(py, (pos, total)) {
@@ -125,7 +128,7 @@ impl SerialSession {
                         }
                     });
                 })
-            },
+            }
         };
 
         mcumgr_client::upload(&self.specs, &path, slot, callback)
@@ -133,21 +136,20 @@ impl SerialSession {
     }
 }
 
-
 /// Python bindings for mcumgr-client, a rust library implementing MCUmgr protocol
-/// 
+///
 /// Example:
 /// ```
 /// import mcumgr_client as mcu
-/// 
+///
 /// s = mcu.SerialSession(device='/dev/ttyUSB0', baudrate=576000)
-/// # Get a dictionnary of properties 
+/// # Get a dictionnary of properties
 /// d = s.list()
 /// print(d)
-/// 
+///
 /// # Upload image to device
 /// s.upload('/path/to/image/bin')
-/// 
+///
 /// # Reset the device
 /// s.reset()
 /// ```
